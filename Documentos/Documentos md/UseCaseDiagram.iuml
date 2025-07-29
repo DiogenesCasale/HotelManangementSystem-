@@ -1,0 +1,52 @@
+@startuml Diagrama De Caso De Uso
+left to right direction
+
+actor Usuario
+actor Administrador
+actor Atendente 
+actor Sistema
+
+package "Usuário" {
+    Usuario --> (RF01 - Entrar no Sistema)
+}
+
+package "Gerente" {
+    Administrador --> (RF02 - Cadastrar Usuários)
+    Administrador --> (RF03 - Manter Usuário)
+    
+    Administrador --> (RF05 - Gerenciar Quartos)
+    (RF05 - Gerenciar Quartos) --> (RF04 - Cadastrar Quartos) : <<include>>
+    
+    Administrador --> (RF16 - Cadastrar Fornecedores)
+    
+    Administrador --> (RF17 - Gerenciar Estoque)
+    (RF17 - Gerenciar Estoque) --> (RF18 - Gerar Relatórios) : <<include>>
+    
+    Administrador --> (RF18 - Gerar Relatórios)
+    (RF18 - Gerar Relatórios) --> (RF22 - Backup e Recuperação) : <<include>>
+    
+    Administrador --> (RF19 - Agendar Manutenções)
+    Administrador --> (RF20 - Controle de Acesso e Segurança)
+    Administrador --> (RF21 - Auditoria e Logs)
+}
+
+package "Recepcionista" {
+    Atendente --> (RF06 - Adicionar Hóspedes)
+    Atendente --> (RF07 - Atualizar Hóspedes)
+    
+    Atendente --> (RF08 - Adicionar Reservas)
+    Atendente --> (RF09 - Atualizar Reservas)
+    Atendente --> (RF10 - Realizar Check-in)
+    Atendente --> (RF11 - Realizar Check-out)
+    Atendente --> (RF12 - Abrir Caixa)
+    Atendente --> (RF13 - Manter Caixa)
+    
+    Atendente --> (RF14 - Processar Pagamentos)
+    (RF14 - Processar Pagamentos) --> (RF15 - Emitir Notas Fiscais) : <<include>>
+}
+
+package "Integração" {
+    Sistema --> (RF23 - Gerenciamento de Sessões)
+    Sistema --> (RF24 - Notificações e Alertas)
+}
+@enduml

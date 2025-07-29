@@ -1,0 +1,106 @@
+// Site - WebGraphviz
+digraph ER { 
+  node [shape=record, fontname="Arial"];
+
+  // ENTIDADES
+  Pessoa [label="{Pessoa|id: BIGINT PK\nnomePessoa: VARCHAR\napelido: VARCHAR\ndataNascimento: DATE\nstatus: VARCHAR\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Endereco [label="{Endereco|id: BIGINT PK\nidPessoa: BIGINT FK\ncep: VARCHAR\nlogradouro: VARCHAR\nbairro: VARCHAR\nnumero: BIGINT\ncomplemento: VARCHAR\ncidade: VARCHAR\nuf: VARCHAR\nstatus: ENUM\nobservacao: TEXT\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Usuario [label="{Usuario|id: BIGINT PK\nidPessoa: BIGINT FK\nidPermissao: BIGINT FK\nlogin: VARCHAR\nsenha: VARCHAR\ncargo: VARCHAR\nstatus: VARCHAR\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Quarto [label="{Quarto|id: BIGINT PK\nnumeroQuarto: VARCHAR\ndescricao: TEXT\nqtdeCama: BIGINT\nqtdeBanheiro: BIGINT\nstatus: VARCHAR\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Adicional [label="{Adicional|id: BIGINT PK\nnome: VARCHAR\nvalor: DECIMAL\nobservacao: TEXT\nstatus: VARCHAR\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP}"];
+  Caracteristica [label="{Caracteristica|id: BIGINT PK\nidQuarto: BIGINT FK\nnomeCaracteristica: VARCHAR\nvalor: DECIMAL\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Hospedagem [label="{Hospedagem|id: BIGINT PK\nidUsuario: BIGINT FK\nidPessoa: BIGINT FK\nidQuarto: BIGINT FK\nvalorHospeedagem: DECIMAL\ndataInicio: DATETIME\ndataFim: DATETIME\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP}"];
+  Lancamento [label="{Lancamento|id: BIGINT PK\nidUsuario: BIGINT FK\nidConta: BIGINT FK\nidCompra: BIGINT FK\nidHospedagem: BIGINT FK\nidUsuarioLancamento: BIGINT FK\ndescricao: VARCHAR\nformaPagamento: VARCHAR\ntipo: ENUM\nstatus: ENUM\nvalor: DECIMAL\nobservacao: TEXT\ndataLancamento: DATE\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP}"];
+  CompraProduto [label="{CompraProduto|id: BIGINT PK\nidFornecedor: BIGINT FK\nidCompra: BIGINT FK\nqtde: BIGINT\nvalorUnitario: DECIMAL\nvalorTotal: DECIMAL\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Compra [label="{Compra|id: BIGINT PK\nidUsuario: BIGINT FK\nvalorTotal: DECIMAL\nobservacao: TEXT\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Permissao [label="{Permissao|id: BIGINT PK\nmodulos: JSON\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Fornecedor [label="{Fornecedor|id: BIGINT PK\nidEndereco: BIGINT FK\nnomeFornecedor: VARCHAR\ncpf_cnpj: VARCHAR\nstatus: VARCHAR\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Documento [label="{Documento|id: BIGINT PK\nidPessoa: BIGINT FK\ntipo: VARCHAR\ndocumento: VARCHAR\nstatus: VARCHAR\nobservacao: TEXT\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Estoque [label="{RegistroEstoque|id: BIGINT PK\nidProduto: BIGINT FK\nidUsuario: BIGINT FK\nidCompra: BIGINT FK\ntipo: ENUM\nobservacao: TEXT\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP}"];
+  QuartoAdicional [label="{QuartoAdicional|id: BIGINT PK\nidQuarto: BIGINT FK\nidAdicional: BIGINT FK\ndataCadastro: TIMESTAMP}"];
+  Acompanhante [label="{Acompanhante|id: BIGINT PK\nidPessoa: BIGINT FK\nidHospedagem: BIGINT FK\ndataCadastro: TIMESTAMP}"];
+  Telefone [label="{Telefone|id: BIGINT PK\nidPessoa: BIGINT FK\ntelefone: VARCHAR\nstatus: VARCHAR\nobservacao: TEXT\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Caixa [label="{Caixa|id: BIGINT PK\nidUsuarioAbertura: BIGINT FK\nidUsuarioFechamento: BIGINT FK\nvalorAbertura: DECIMAL\nvalorFechamento: DECIMAL\nstatus: VARCHAR\ndataAbertura: DATE\ndataFechamento: DATE}"];
+  CategoriaProduto [label="{CategoriaProduto|id: BIGINT PK\nidCategoriaPai: BIGINT FK\nnomeCategoria: VARCHAR\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+  Produto [label="{Produto|id: BIGINT PK\nidUsuarioRegistro: BIGINT FK\nidCategoria: BIGINT FK\nnomeProduto: VARCHAR\ndataCadastro: TIMESTAMP\ndataAtualizacao: TIMESTAMP\n}"];
+
+  // RELACIONAMENTOS
+  node [shape=diamond, style=filled, fillcolor=lightgray];
+
+  possui [label="possui"];
+  podeSer [label="pode ser"];
+  reserva1 [label="reserva"];
+  atribui [label="atribui"];
+  contem [label="contém"];
+  gera [label="gera"];
+  realizaHospedagem [label="realiza"];
+  realizaCompra [label="realiza"];
+  compraRel [label="vincula"];
+  tem1 [label="tem"];
+  registra [label="registra"];
+  fornece [label="fornece"];
+  lanca [label="lança"];
+  vincula [label="vincula"];
+  tem2 [label="tem"];
+  possuiLanc [label="possui"];
+  registraProd [label="registra"];
+
+  // CONEXÕES
+  edge [fontname="Arial"];
+
+  Pessoa -> possui [label="1"];
+  possui -> Endereco [label="N"];
+  possui -> Documento [label="N"];
+  possui -> Telefone [label="N"];
+
+  Pessoa -> podeSer [label="1"];
+  podeSer -> Usuario [label="1"];
+
+  Pessoa -> reserva1 [label="1"];
+  reserva1 -> Hospedagem [label="N"];
+
+  Hospedagem -> atribui [label="1"];
+  atribui -> Quarto [label="1"];
+
+  Quarto -> contem [label="1"];
+  contem -> Adicional [label="N"];
+  contem -> Caracteristica [label="N"];
+
+  Usuario -> realizaHospedagem [label="1"];
+  realizaHospedagem -> Hospedagem [label="N"];
+
+  Hospedagem -> gera [label="1"];
+  gera -> Lancamento [label="N"];
+
+  Lancamento -> lanca [label="1"];
+  lanca -> Estoque [label="N"];
+  lanca -> Caixa [label="N"];
+
+  Usuario -> realizaCompra [label="1"];
+  realizaCompra -> CompraProduto [label="N"];
+
+  CompraProduto -> compraRel [label="1"];
+  compraRel -> Compra [label="N"];
+
+  Compra -> possuiLanc [label="N"];
+  possuiLanc -> Lancamento [label="1"];
+
+  Usuario -> tem1 [label="1"];
+  tem1 -> Permissao [label="N"];
+
+  Usuario -> registra [label="1"];
+  registra -> Fornecedor [label="N"];
+  registra -> CategoriaProduto [label="N"];
+
+  Fornecedor -> fornece [label="1"];
+  fornece -> CompraProduto [label="N"];
+
+  Quarto -> vincula [label="1"];
+  vincula -> QuartoAdicional [label="N"];
+
+  Pessoa -> tem2 [label="1"];
+  tem2 -> Acompanhante [label="N"];
+
+  CompraProduto -> registraProd [label="1"];
+  registraProd -> Produto [label="N"];
+}

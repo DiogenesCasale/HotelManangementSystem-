@@ -1,0 +1,460 @@
+-- 1) Cria o database (caso não exista) e seleciona
+CREATE DATABASE IF NOT EXISTS `hotel`
+  DEFAULT CHARACTER SET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+USE `hotel`;
+
+-- -----------------------------------------------------
+-- Table `tblAdicional`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblAdicional` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(255) NOT NULL,
+  `valor` DECIMAL(10,2) NOT NULL,
+  `observacao` TEXT NULL DEFAULT NULL,
+  `status` TINYINT NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblPessoa`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblPessoa` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nomePessoa` VARCHAR(255) NOT NULL,
+  `apelido` VARCHAR(255) NULL DEFAULT NULL,
+  `dataNascimento` DATE NULL,
+  `status` TINYINT NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblEndereco`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblEndereco` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idPessoa` BIGINT UNSIGNED NOT NULL,
+  `cep` VARCHAR(255) NOT NULL,
+  `logradouro` VARCHAR(255) NOT NULL,
+  `bairro` VARCHAR(255) NOT NULL,
+  `numero` VARCHAR(255) NOT NULL,
+  `complemento` VARCHAR(255) NULL DEFAULT NULL,
+  `cidade` VARCHAR(255) NOT NULL,
+  `uf` VARCHAR(2) NOT NULL,
+  `status` TINYINT NOT NULL,
+  `observacao` TEXT NULL DEFAULT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_endereco_pessoa` (`idPessoa`),
+  CONSTRAINT `fk_endereco_pessoa`
+    FOREIGN KEY (`idPessoa`) REFERENCES `tblPessoa`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblFornecedor`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblFornecedor` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idEndereco` BIGINT UNSIGNED NULL,
+  `nomeFornecedor` VARCHAR(255) NOT NULL,
+  `cpf_cnpj` VARCHAR(255) NOT NULL,
+  `status` TINYINT NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_fornecedor_endereco` (`idEndereco`),
+  CONSTRAINT `fk_fornecedor_endereco`
+    FOREIGN KEY (`idEndereco`) REFERENCES `tblEndereco`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblUsuario`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblUsuario` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idPessoa` BIGINT UNSIGNED NOT NULL,
+  `login` VARCHAR(255) NOT NULL,
+  `senha` VARCHAR(255) NOT NULL,
+  `cargo` VARCHAR(100) NOT NULL,
+  `modulos` JSON NOT NULL,
+  `status` TINYINT NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_usuario_pessoa` (`idPessoa`),
+  CONSTRAINT `fk_usuario_pessoa`
+    FOREIGN KEY (`idPessoa`) REFERENCES `tblPessoa`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblCompra`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblCompra` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idUsuario` BIGINT UNSIGNED NOT NULL,
+  `valorTotal` DECIMAL(10,2) NOT NULL,
+  `observacao` TEXT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_compra_usuario` (`idUsuario`),
+  CONSTRAINT `fk_compra_usuario`
+    FOREIGN KEY (`idUsuario`) REFERENCES `tblUsuario`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblCompraProduto`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblCompraProduto` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idFornecedor` BIGINT UNSIGNED NOT NULL,
+  `idCompra` BIGINT UNSIGNED NOT NULL,
+  `qtd` BIGINT NOT NULL,
+  `valorUnitario` DECIMAL(10,2) NOT NULL,
+  `valorTotal` DECIMAL(10,2) NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`, `valorUnitario`),
+  INDEX `idx_compra_produto_fornecedor` (`idFornecedor`),
+  INDEX `idx_compra_produto_compra` (`idCompra`),
+  CONSTRAINT `fk_cp_fornecedor`
+    FOREIGN KEY (`idFornecedor`) REFERENCES `tblFornecedor`(`id`),
+  CONSTRAINT `fk_cp_compra`
+    FOREIGN KEY (`idCompra`) REFERENCES `tblCompra`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblConta`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblConta` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nomeConta` VARCHAR(255) NOT NULL,
+  `nomeBanco` VARCHAR(255) NOT NULL,
+  `valorInicial` DECIMAL(10,2) NOT NULL,
+  `status` TINYINT NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblDocumento`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblDocumento` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idPessoa` BIGINT UNSIGNED NOT NULL,
+  `tipo` VARCHAR(255) NOT NULL,
+  `documento` VARCHAR(255) NOT NULL,
+  `status` TINYINT NOT NULL,
+  `observacao` TEXT NULL DEFAULT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_documento_pessoa` (`idPessoa`),
+  CONSTRAINT `fk_documento_pessoa`
+    FOREIGN KEY (`idPessoa`) REFERENCES `tblPessoa`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblQuarto`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblQuarto` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `numeroQuarto` VARCHAR(255) NOT NULL,
+  `valor` DECIMAL(10,2) NOT NULL,
+  `descricao` TEXT NULL DEFAULT NULL,
+  `status` TINYINT NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblHospedagem`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblHospedagem` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idUsuario` BIGINT UNSIGNED NOT NULL,
+  `idPessoa` BIGINT UNSIGNED NOT NULL,
+  `idQuarto` BIGINT UNSIGNED NOT NULL,
+  `valorHospedagem` DECIMAL(10,2) NOT NULL,
+  `status` TINYINT NOT NULL,
+  `dataInicio` DATETIME NOT NULL,
+  `dataFim` DATETIME NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_hospedagem_usuario`       (`idUsuario`),
+  INDEX `idx_hospedagem_pessoa`        (`idPessoa`),
+  INDEX `idx_hospedagem_quarto`        (`idQuarto`),
+  CONSTRAINT `fk_hospedagem_usuario`
+    FOREIGN KEY (`idUsuario`) REFERENCES `tblUsuario`(`id`),
+  CONSTRAINT `fk_hospedagem_pessoa`
+    FOREIGN KEY (`idPessoa`)  REFERENCES `tblPessoa`(`id`),
+  CONSTRAINT `fk_hospedagem_quarto`
+    FOREIGN KEY (`idQuarto`)  REFERENCES `tblQuarto`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblHospedagemAdicional`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblHospedagemAdicional` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idHospedagem` BIGINT UNSIGNED NOT NULL,
+  `idAdicional` BIGINT UNSIGNED NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_ha_hospedagem` (`idHospedagem`),
+  INDEX `idx_ha_adicional`  (`idAdicional`),
+  CONSTRAINT `fk_ha_hospedagem`
+    FOREIGN KEY (`idHospedagem`) REFERENCES `tblHospedagem`(`id`),
+  CONSTRAINT `fk_ha_adicional`
+    FOREIGN KEY (`idAdicional`)  REFERENCES `tblAdicional`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblLancamento`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblLancamento` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idUsuario`           BIGINT UNSIGNED NOT NULL,
+  `idConta`             BIGINT UNSIGNED NOT NULL,
+  `idCompra`            BIGINT UNSIGNED NULL,
+  `idHospedagem`        BIGINT UNSIGNED NULL,
+  `idUsuarioLancamento` BIGINT UNSIGNED NULL,
+  `descricao` VARCHAR(255) NOT NULL,
+  `formaPagamento` VARCHAR(45) NOT NULL,
+  `tipo` ENUM('ENTRADA','SAIDA') NOT NULL,
+  `status` TINYINT NOT NULL,
+  `valor` DECIMAL(10,2) NOT NULL,
+  `observacao` TEXT NULL DEFAULT NULL,
+  `dataLancamento` TIMESTAMP NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_lanc_usuario`    (`idUsuario`),
+  INDEX `idx_lanc_conta`      (`idConta`),
+  INDEX `idx_lanc_compra`     (`idCompra`),
+  INDEX `idx_lanc_hospedagem` (`idHospedagem`),
+  INDEX `idx_lanc_userlanc`   (`idUsuarioLancamento`),
+  CONSTRAINT `fk_lanc_usuario`
+    FOREIGN KEY (`idUsuario`) REFERENCES `tblUsuario`(`id`),
+  CONSTRAINT `fk_lanc_conta`
+    FOREIGN KEY (`idConta`)  REFERENCES `tblConta`(`id`),
+  CONSTRAINT `fk_lanc_compra`
+    FOREIGN KEY (`idCompra`) REFERENCES `tblCompra`(`id`),
+  CONSTRAINT `fk_lanc_hospedagem`
+    FOREIGN KEY (`idHospedagem`) REFERENCES `tblHospedagem`(`id`),
+  CONSTRAINT `fk_lanc_userlanc`
+    FOREIGN KEY (`idUsuarioLancamento`) REFERENCES `tblUsuario`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblRegistroEstoque`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblRegistroEstoque` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idProduto` BIGINT UNSIGNED NOT NULL,
+  `idUsuario` BIGINT UNSIGNED NOT NULL,
+  `idCompra`  BIGINT UNSIGNED NULL DEFAULT NULL,
+  `tipo` ENUM('ENTRADA','SAIDA') NOT NULL,
+  `qtd` BIGINT NOT NULL,
+  `observacao` TEXT NULL DEFAULT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_re_usu`    (`idUsuario`),
+  INDEX `idx_re_prod`   (`idProduto`),
+  INDEX `idx_re_compra` (`idCompra`),
+  CONSTRAINT `fk_re_usuario`
+    FOREIGN KEY (`idUsuario`) REFERENCES `tblUsuario`(`id`),
+  CONSTRAINT `fk_re_produto`
+    FOREIGN KEY (`idProduto`) REFERENCES `tblCompraProduto`(`id`),
+  CONSTRAINT `fk_re_compra`
+    FOREIGN KEY (`idCompra`)  REFERENCES `tblCompra`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblTelefone`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblTelefone` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idPessoa` BIGINT UNSIGNED NOT NULL,
+  `telefone` VARCHAR(255) NOT NULL,
+  `status` TINYINT NOT NULL,
+  `observacao` TEXT NULL DEFAULT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_tel_pessoa` (`idPessoa`),
+  CONSTRAINT `fk_tel_pessoa`
+    FOREIGN KEY (`idPessoa`) REFERENCES `tblPessoa`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblAcompanhante`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblAcompanhante` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idPessoa`     BIGINT UNSIGNED NOT NULL,
+  `idHospedagem` BIGINT UNSIGNED NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_acomp_pessoa`     (`idPessoa`),
+  INDEX `idx_acomp_hospedagem` (`idHospedagem`),
+  CONSTRAINT `fk_acomp_pessoa`
+    FOREIGN KEY (`idPessoa`)     REFERENCES `tblPessoa`(`id`),
+  CONSTRAINT `fk_acomp_hospedagem`
+    FOREIGN KEY (`idHospedagem`) REFERENCES `tblHospedagem`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblCaixa`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblCaixa` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idUsuarioAbertura` BIGINT UNSIGNED NOT NULL,
+  `idUsuarioFechamento` BIGINT UNSIGNED NULL,
+  `valorAbertura` DECIMAL(10,2) NOT NULL,
+  `valorFechamento` DECIMAL(10,2) NULL,
+  `status` TINYINT NOT NULL,
+  `dataAbertura` DATE NOT NULL,
+  `dataFechamento` DATE NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_caixa_abertura` (`idUsuarioAbertura`),
+  INDEX `idx_caixa_fechamento` (`idUsuarioFechamento`),
+  CONSTRAINT `fk_caixa_abertura`
+    FOREIGN KEY (`idUsuarioAbertura`) REFERENCES `tblUsuario`(`id`),
+  CONSTRAINT `fk_caixa_fechamento`
+    FOREIGN KEY (`idUsuarioFechamento`) REFERENCES `tblUsuario`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblCaracteristica`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblCaracteristica` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idQuarto` BIGINT UNSIGNED NOT NULL,
+  `nomeCaracteristica` VARCHAR(100) NOT NULL,
+  `valor` DECIMAL(10,2) NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_carac_quarto` (`idQuarto`),
+  CONSTRAINT `fk_carac_quarto`
+    FOREIGN KEY (`idQuarto`) REFERENCES `tblQuarto`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `tblQuartoAdicional`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblQuartoAdicional` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idQuarto`   BIGINT UNSIGNED NOT NULL,
+  `idAdicional` BIGINT UNSIGNED NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_qa_quarto`     (`idQuarto`),
+  INDEX `idx_qa_adicional`  (`idAdicional`),
+  CONSTRAINT `fk_qa_quarto`
+    FOREIGN KEY (`idQuarto`) REFERENCES `tblQuarto`(`id`),
+  CONSTRAINT `fk_qa_adicional`
+    FOREIGN KEY (`idAdicional`) REFERENCES `tblAdicional`(`id`)
+) ENGINE=InnoDB;
+
+-- -----------------------------------------------------
+-- Table `tblCategoriaProduto`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblCategoriaProduto` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idCategoriaPai` BIGINT UNSIGNED NULL,
+  `nomeCategoria` VARCHAR(255) NOT NULL,
+  `dataCadastro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_catp_pai` (`idCategoriaPai`),
+  CONSTRAINT `fk_catp_pai`
+    FOREIGN KEY (`idCategoriaPai`) REFERENCES `tblCategoriaProduto`(`id`)
+) ENGINE=InnoDB;
+
+-- -----------------------------------------------------
+-- Table `tblProduto`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tblProduto` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idUsuarioRegistro` BIGINT UNSIGNED NULL,
+  `idCategoria`       BIGINT UNSIGNED NOT NULL,
+  `nomeProduto`       VARCHAR(255) NOT NULL,
+  `qtdMinima`       INT DEFAULT 0,
+  `status` TINYINT NOT NULL,
+  `observacao` TEXT NULL DEFAULT NULL,
+  `dataCadastro`      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao`   TIMESTAMP NOT NULL
+    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_prod_user` (`idUsuarioRegistro`),
+  INDEX `idx_prod_cat`  (`idCategoria`),
+  CONSTRAINT `fk_prod_user`
+    FOREIGN KEY (`idUsuarioRegistro`) REFERENCES `tblUsuario`(`id`),
+  CONSTRAINT `fk_prod_cat`
+    FOREIGN KEY (`idCategoria`)       REFERENCES `tblCategoriaProduto`(`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;

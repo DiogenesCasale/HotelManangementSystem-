@@ -1,0 +1,16 @@
+# Ignorar dependências do Laravel
+vendor/
+node_modules/
+
+# Ignorar arquivos do Laravel
+.env
+.env.example
+storage/logs
+bootstrap/cache/
+
+# Ignorar arquivos de log e cache
+*.log
+*.sqlite
+
+# Ignorar pastas do Docker
+dbdata/

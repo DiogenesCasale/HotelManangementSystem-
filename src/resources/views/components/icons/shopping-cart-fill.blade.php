@@ -1,0 +1,1 @@
+<i {{ $attributes->merge([ "class" => "fa-solid fa-shopping-cart  "]) }}></i>
